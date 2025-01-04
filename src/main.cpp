@@ -1,11 +1,70 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include "config.h"
+#include "GNC/Navi.h"
+
+Navi navi;
+uint32_t prev_ms_log = 0;
+String buf_serial = "";
+
+void processSerialInput(String input) {
+    JsonDocument doc;
+    DeserializationError error = deserializeJson(doc, input);
+
+    if (!error)
+    {
+        if (doc["cmd_cali"].is<int>()) {
+            int cmdCali = doc["cmd_cali"];
+            if (cmdCali) {
+                Serial.println("Calibration Start.");
+                navi.calibrate();
+                Serial.println("Calibration Done.");
+            }
+        }
+        else {
+            Serial.println("Unknown Command");
+        }
+    }
+    else {
+        Serial.print("Invalid JSON.");
+        Serial.print(error.f_str());
+        Serial.println();
+    }
+
+    buf_serial = "";
+}
 
 void setup()
 {
-    // put your setup code here, to run once:
+    navi.init();
 }
 
 void loop()
 {
-    // put your main code here, to run repeatedly:
+    navi.loop();
+
+    uint32_t curr_ms = millis();
+    if (curr_ms - prev_ms_log >= 100) {
+        prev_ms_log = curr_ms;
+
+        JsonDocument doc;
+        doc["mx"] = navi.getRawMagX();
+        doc["my"] = navi.getRawMagY();
+        doc["mz"] = navi.getRawMagZ();
+        doc["r"]  = navi.getR();
+        doc["p"]  = navi.getP();
+        doc["y"]  = navi.getY();
+        serializeJson(doc, Serial);
+        Serial.println();
+    }
+
+    while (Serial.available()) {
+        char incomingChar = Serial.read();
+        if (incomingChar == '\n') {
+            processSerialInput(buf_serial);
+        }
+        else {
+            buf_serial += incomingChar;
+        }
+    }
 }

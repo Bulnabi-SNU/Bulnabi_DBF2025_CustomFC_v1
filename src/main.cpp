@@ -34,6 +34,35 @@ void processSerialInput(String input) {
     buf_serial = "";
 }
 
+/* ================================
+loop
+    if conn & arm
+        if autopilot
+            유도명령 -> (목표자세) -> 제어기
+        if manual
+            조종기값 -> (목표자세) -> 제어기
+    else
+        kill : pusher
+
+
+    always
+        navigation update : "compute attitude" with "imu"
+                            "compute position" with "gps"
+            imu comm (100Hz)
+            gps comm (10Hz)
+        
+        guidance   update : compute "required attitude" to "achieve waypoint" with "attitude, position"
+            mission & sequence handling
+        
+        controller update : compute "required input for actuators" to "achieve attitude" with ""
+            pusher control
+            servo control
+        
+        peripheral
+            logging (internal memory)
+            telemetry (to GCS)
+================================ */
+
 void setup()
 {
     navi.init();

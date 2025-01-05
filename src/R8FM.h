@@ -14,6 +14,8 @@ private:
     unsigned armed;
     unsigned mode;
 
+    uint32_t prev_ms_r8fm;
+
     double t_tar_rx;
     double r_tar_rx;
     double p_tar_rx;
@@ -21,7 +23,12 @@ private:
 
 public:
     R8FM(int ppmPin, int channels);
+    void loop();
     void updatePPM();
+    double getRawThrottleTarget() const;
+    double getRawRollTarget() const;
+    double getRawPitchTarget() const;
+    double getRawYawTarget() const;
     double getThrottleTarget() const;
     double getRollTarget() const;
     double getPitchTarget() const;

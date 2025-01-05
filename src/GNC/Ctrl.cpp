@@ -25,7 +25,7 @@ void Ctrl::loop()
     if (curr_ms - prev_ms_ctrl >= 10) {
         if (state_arm)
         {
-            updateMotor();
+            updateController();
         }
         else
         {
@@ -36,7 +36,25 @@ void Ctrl::loop()
     }
 }
 
-void Ctrl::updateMotor()
+void Ctrl::arm()
+{
+    state_arm = true;
+}
+
+void Ctrl::disarm()
+{
+    state_arm = false;
+}
+
+void Ctrl::setTarget(double throttle, double roll, double pitch, double yaw)
+{
+    t_tar = throttle;
+    r_tar = roll;
+    p_tar = pitch;
+    y_tar = yaw;
+}
+
+void Ctrl::updateController()
 {
     double dt = 0.01;
 
@@ -76,37 +94,24 @@ void Ctrl::updateMotor()
     m_elevator = constrain(m_elevator, 0, 255);
     m_rudder   = constrain(m_rudder,   0, 255);
 
-    // 모터 출력
-    analogWrite(MTR_PUSH,     (int)m_push);
-    analogWrite(MTR_AILERON,  (int)m_aileron);
-    analogWrite(MTR_ELEVATOR, (int)m_elevator);
-    analogWrite(MTR_RUDDER,   (int)m_rudder);
-
     // 이전 값 업데이트
     prev_err_r = err_r;
     prev_err_p = err_p;
     prev_err_y = err_y;
+
+    updateMotor(m_push, m_aileron, m_elevator, m_rudder);
+}
+
+void Ctrl::updateMotor(double m_push, double m_aileron, double m_elevator, double m_rudder)
+{
+    if (state_arm) { analogWrite(MTR_PUSH, (int)m_push); }
+    else { stopMotor(); }
+    analogWrite(MTR_AILERON,  (int)m_aileron);
+    analogWrite(MTR_ELEVATOR, (int)m_elevator);
+    analogWrite(MTR_RUDDER,   (int)m_rudder);
 }
 
 void Ctrl::stopMotor()
 {
     analogWrite(MTR_PUSH, 0);
-}
-
-void Ctrl::arm()
-{
-    state_arm = true;
-}
-
-void Ctrl::disarm()
-{
-    state_arm = false;
-}
-
-void Ctrl::setTarget(double throttle, double roll, double pitch, double yaw)
-{
-    t_tar = map(throttle, 1000, 2000,           0,        255);
-    r_tar = map(roll,     1000, 2000, -CTRL_MAX_R, CTRL_MAX_R);
-    p_tar = map(pitch,    1000, 2000, -CTRL_MAX_P, CTRL_MAX_P);
-    y_tar = map(yaw,      1000, 2000, -CTRL_MAX_Y, CTRL_MAX_Y);
 }

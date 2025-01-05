@@ -75,8 +75,42 @@ void setup()
 void loop()
 {
     navi.loop();
+    r8fm.loop();
 
-    r8fm.updatePPM();
+    if (r8fm.isConnected() && r8fm.isConnected()) {
+        ctrl.arm();
+    }
+    else {
+        ctrl.disarm();
+    }
+
+    if (r8fm.getMode() == 2) {  // 2, Mission Mode
+        // TODO : implement guidance algorithm & waypoint sequence handler
+        // guid.loop();
+        // ctrl.setTarget(THROTTLE_COMMAND_FROM_GUIDANCE,
+        //                Roll_____COMMAND_FROM_GUIDANCE,
+        //                PITCH____COMMAND_FROM_GUIDANCE,
+        //                YAW______COMMAND_FROM_GUIDANCE);
+        // ctrl.loop();
+    }
+    else if (r8fm.getMode() == 1) { // 1, Gyro Stabilized Mode
+        ctrl.setTarget(r8fm.getThrottleTarget(),
+                       r8fm.getRollTarget(),
+                       r8fm.getPitchTarget(),
+                       r8fm.getYawTarget());
+        ctrl.loop();
+    }
+    else if (r8fm.getMode() == 0) { // 0, Full Manual Mode
+        ctrl.updateMotor(r8fm.getRawThrottleTarget(),
+                         r8fm.getRawRollTarget(),
+                         r8fm.getRawPitchTarget(),
+                         r8fm.getRawYawTarget());
+    }
+    else {  // Out of State Machine, 대책없음
+        
+    }
+
+
 
 
 
@@ -99,6 +133,11 @@ void loop()
         doc["conn"] = r8fm.isConnected();
         doc["arm"]  = r8fm.isArmed();
         doc["mode"] = r8fm.getMode();
+
+        doc["ctrl_T"] = r8fm.getRawThrottleTarget();
+        doc["ctrl_A"] = r8fm.getRawRollTarget();
+        doc["ctrl_E"] = r8fm.getRawPitchTarget();
+        doc["ctrl_R"] = r8fm.getRawYawTarget();
 
         serializeJson(doc, Serial);
         Serial.println();

@@ -15,6 +15,7 @@ public:
     void disarm();
 
     void setTarget(double throttle, double roll, double pitch, double yaw);
+    void updateMotor(double m_push, double m_aileron, double m_elevator, double m_rudder);
 
 private:
     Navi& navi;
@@ -37,7 +38,7 @@ private:
     double prev_err_p;
     double prev_err_y;
 
-    void updateMotor();
+    void updateController();
     void stopMotor();
 };
 

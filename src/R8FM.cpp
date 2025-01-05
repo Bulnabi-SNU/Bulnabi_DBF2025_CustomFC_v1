@@ -5,7 +5,16 @@ R8FM::R8FM(int ppmPin, int channels)
       A(0), E(0), T(0), R(0),
       U1(0), U2(0), U3(0), U4(0),
       conn(0), armed(0), mode(0),
+      prev_ms_r8fm(0),
       t_tar_rx(0), r_tar_rx(0), p_tar_rx(0), y_tar_rx(0) {}
+
+void R8FM::loop() {
+    uint32_t curr_ms = millis();
+    if (curr_ms - prev_ms_r8fm >= 10) {
+        updatePPM();
+        prev_ms_r8fm = curr_ms;
+    }
+}
 
 void R8FM::updatePPM() {
     A  = ppm.latestValidChannelValue(1, 0);
@@ -36,6 +45,22 @@ void R8FM::updatePPM() {
     r_tar_rx = map(A, 1000, 2000, -20, 20);
     p_tar_rx = map(E, 1000, 2000, -20, 20);
     y_tar_rx = map(R, 1000, 2000, -20, 20);
+}
+
+double R8FM::getRawThrottleTarget() const {
+    return T;
+}
+
+double R8FM::getRawRollTarget() const {
+    return A;
+}
+
+double R8FM::getRawPitchTarget() const {
+    return E;
+}
+
+double R8FM::getRawYawTarget() const {
+    return R;
 }
 
 double R8FM::getThrottleTarget() const {

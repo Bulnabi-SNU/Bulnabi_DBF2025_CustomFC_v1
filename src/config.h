@@ -1,5 +1,5 @@
 // PINMAP
-#define PPM_INT     34
+#define PPM_INT     40
 
 #define MTR_PUSH     2  // PUSHER   // TODO : matching check
 #define MTR_AILERON  4  // ROLL     // TODO : matching check

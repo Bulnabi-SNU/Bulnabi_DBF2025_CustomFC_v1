@@ -1,10 +1,10 @@
 // PINMAP
 #define PPM_INT     34
 
-#define MTR_1   2   // TODO : check
-#define MTR_2   4   // TODO : check
-#define MTR_3   27  // TODO : check
-#define MTR_4   26  // TODO : check
+#define MTR_PUSH     2  // PUSHER   // TODO : matching check
+#define MTR_AILERON  4  // ROLL     // TODO : matching check
+#define MTR_ELEVATOR 27 // PITCH    // TODO : matching check
+#define MTR_RUDDER   26 // YAW      // TODO : matching check
 
 #define LED_1   32
 #define LED_2   33

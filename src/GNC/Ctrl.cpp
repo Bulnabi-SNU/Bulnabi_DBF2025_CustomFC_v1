@@ -12,10 +12,10 @@ Ctrl::Ctrl(Navi& navi)
 
 void Ctrl::init()
 {
-    pinMode(MTR_1, OUTPUT);
-    pinMode(MTR_2, OUTPUT);
-    pinMode(MTR_3, OUTPUT);
-    pinMode(MTR_4, OUTPUT);
+    pinMode(MTR_PUSH,     OUTPUT);
+    pinMode(MTR_AILERON,  OUTPUT);
+    pinMode(MTR_ELEVATOR, OUTPUT);
+    pinMode(MTR_RUDDER,   OUTPUT);
     stopMotor();
 }
 
@@ -63,23 +63,24 @@ void Ctrl::updateMotor()
     double drv_y = (err_y - prev_err_y) / dt;
     double control_y = GAIN_Y_Kp * err_y + GAIN_Y_Ki * itg_y + GAIN_Y_Kd * drv_y;
 
-    // 믹싱 (쿼드콥터 4개의 모터 출력으로 분배)
-    double m1 = t_tar + control_r + control_p - control_y; // Front-right
-    double m2 = t_tar - control_r + control_p + control_y; // Front-left
-    double m3 = t_tar - control_r - control_p - control_y; // Rear-left
-    double m4 = t_tar + control_r - control_p + control_y; // Rear-right
+    // 믹싱
+    double m_push     = t_tar;
+    double m_aileron  = control_r;
+    double m_elevator = control_p;
+    double m_rudder   = control_y;
 
+    // TODO : 이거는 DC모터 제어. pwm을 esc 및 서보와 맞춰야함
     // 모터 출력 범위 제한 (0 ~ 255)
-    m1 = constrain(m1, 0, 255);
-    m2 = constrain(m2, 0, 255);
-    m3 = constrain(m3, 0, 255);
-    m4 = constrain(m4, 0, 255);
+    m_push     = constrain(m_push,     0, 255);
+    m_aileron  = constrain(m_aileron,  0, 255);
+    m_elevator = constrain(m_elevator, 0, 255);
+    m_rudder   = constrain(m_rudder,   0, 255);
 
     // 모터 출력
-    analogWrite(MTR_1, (int)m1);
-    analogWrite(MTR_2, (int)m2);
-    analogWrite(MTR_3, (int)m3);
-    analogWrite(MTR_4, (int)m4);
+    analogWrite(MTR_PUSH,     (int)m_push);
+    analogWrite(MTR_AILERON,  (int)m_aileron);
+    analogWrite(MTR_ELEVATOR, (int)m_elevator);
+    analogWrite(MTR_RUDDER,   (int)m_rudder);
 
     // 이전 값 업데이트
     prev_err_r = err_r;
@@ -89,10 +90,7 @@ void Ctrl::updateMotor()
 
 void Ctrl::stopMotor()
 {
-    analogWrite(MTR_1, 0);
-    analogWrite(MTR_2, 0);
-    analogWrite(MTR_3, 0);
-    analogWrite(MTR_4, 0);
+    analogWrite(MTR_PUSH, 0);
 }
 
 void Ctrl::arm()

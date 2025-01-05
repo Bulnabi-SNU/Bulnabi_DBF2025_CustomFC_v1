@@ -3,11 +3,13 @@
 #include "config.h"
 #include "GNC/Navi.h"
 #include "GNC/Ctrl.h"
+#include "R8FM.h"
 
 Navi navi;
 Ctrl ctrl(navi);
 uint32_t prev_ms_log = 0;
 String buf_serial = "";
+R8FM r8fm(PPM_INT, PPM_CH);
 
 void processSerialInput(String input) {
     JsonDocument doc;
@@ -74,6 +76,10 @@ void loop()
 {
     navi.loop();
 
+    r8fm.updatePPM();
+
+
+
     uint32_t curr_ms = millis();
     if (curr_ms - prev_ms_log >= 100) {
         prev_ms_log = curr_ms;
@@ -85,6 +91,15 @@ void loop()
         doc["r"]  = navi.getR();
         doc["p"]  = navi.getP();
         doc["y"]  = navi.getY();
+
+        doc["T"]  = r8fm.getThrottleTarget();
+        doc["A"]  = r8fm.getRollTarget();
+        doc["E"]  = r8fm.getPitchTarget();
+        doc["R"]  = r8fm.getYawTarget();
+        doc["conn"] = r8fm.isConnected();
+        doc["arm"]  = r8fm.isArmed();
+        doc["mode"] = r8fm.getMode();
+
         serializeJson(doc, Serial);
         Serial.println();
     }

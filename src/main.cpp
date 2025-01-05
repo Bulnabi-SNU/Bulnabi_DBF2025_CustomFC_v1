@@ -2,8 +2,10 @@
 #include <ArduinoJson.h>
 #include "config.h"
 #include "GNC/Navi.h"
+#include "GNC/Ctrl.h"
 
 Navi navi;
+Ctrl ctrl(navi);
 uint32_t prev_ms_log = 0;
 String buf_serial = "";
 

@@ -69,6 +69,7 @@ loop
 
 void setup()
 {
+    Serial.begin(115200);
     navi.init();
 }
 
@@ -138,6 +139,14 @@ void loop()
         doc["ctrl_A"] = r8fm.getRawRollTarget();
         doc["ctrl_E"] = r8fm.getRawPitchTarget();
         doc["ctrl_R"] = r8fm.getRawYawTarget();
+
+        doc["sats"] = navi.getSats();
+        doc["hdop"] = navi.getHdop();
+        doc["lat"]  = navi.getLat();
+        doc["lng"]  = navi.getLng();
+        doc["age"]  = navi.getAge();
+        doc["alt"]  = navi.getAlt();
+        doc["gps_last"] = navi.getGPSLast();
 
         serializeJson(doc, Serial);
         Serial.println();

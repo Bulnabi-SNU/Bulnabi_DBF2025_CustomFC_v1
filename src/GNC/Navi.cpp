@@ -3,15 +3,17 @@
 #include "config.h"
 
 Navi::Navi()
-    : mpu(), prev_ms_imu(0),
+    : mpu(), gps(), 
+      prev_ms_imu(0), prev_ms_gps(0), prev_pkt_gps(0),
       raw_acc_x(0), raw_acc_y(0), raw_acc_z(0),
       lin_acc_x(0), lin_acc_y(0), lin_acc_z(0),
       raw_ang_x(0), raw_ang_y(0), raw_ang_z(0),
       raw_mag_x(0), raw_mag_y(0), raw_mag_z(0),
+      sats(0), hdop(0), lat(0), lng(0), age(0), alt_GPS(0),
       r_cur(0), p_cur(0), y_cur(0) {}
 
 void Navi::init() {
-    // TODO : EEPROM begin is needed?
+    // for IMU
     Wire.begin();
     delay(2000);
     if (!mpu.setup(ADDR_MPU9250)) {
@@ -23,11 +25,30 @@ void Navi::init() {
             delay(50);
         }
     }
-    loadCalibration();
+    loadCalibration();  // TODO : EEPROM begin is needed?
+
+    // for GPS
+    Serial5.begin(9600);    // for GPS
 }
 
 void Navi::loop() {
     uint32_t curr_ms = millis();
+
+    if (curr_ms - prev_ms_gps >= 100) {   // 10Hz
+        sats    = gps.satellites.value();   // default : 0
+        hdop    = gps.hdop.hdop();          // default : 99.99  // 99.99->poor, 0.01->nice
+        lat     = gps.location.lat();       // default : 0.0
+        lng     = gps.location.lng();       // default : 0.0
+        age     = gps.location.age();       // default : 4294967295 (ms)
+        alt_GPS = gps.altitude.meters();    // default : 0.0
+        prev_ms_gps = curr_ms;
+    }
+
+    while (Serial5.available()) {
+        gps.encode(Serial5.read());
+        prev_pkt_gps = curr_ms;
+    }
+
     if (curr_ms - prev_ms_imu >= 10) {
         updateAttitude();
         prev_ms_imu = curr_ms;

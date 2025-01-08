@@ -3,7 +3,8 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
-#include "MPU9250.h"
+#include <MPU9250.h>
+#include <TinyGPSPlus.h>
 
 class Navi {
 public:
@@ -13,7 +14,8 @@ public:
     void loop();
 
     void calibrate();
-    
+
+    // IMU getter
     double getRawAccX() const { return raw_acc_x; }
     double getRawAccY() const { return raw_acc_y; }
     double getRawAccZ() const { return raw_acc_z; }
@@ -27,6 +29,16 @@ public:
     double getRawMagY() const { return raw_mag_y; }
     double getRawMagZ() const { return raw_mag_z; }
 
+    // GPS getter
+    double getSats() const { return sats; }
+    double getHdop() const { return hdop; }
+    double getLat()  const { return lat; }
+    double getLng()  const { return lng; }
+    double getAge()  const { return age; }
+    double getAlt()  const { return alt_GPS; }
+    double getGPSLast() const { return millis() - prev_pkt_gps; }
+
+    // Navigation Solution
     double getR() const { return r_cur; }
     double getP() const { return p_cur; }
     double getY() const { return y_cur; }
@@ -35,13 +47,23 @@ private:
     void updateAttitude();
 
     MPU9250 mpu;
-    uint32_t prev_ms_imu;
+    TinyGPSPlus gps;
 
-    // Sensor's Raw Output
+    uint32_t prev_ms_imu;
+    uint32_t prev_ms_gps;
+    uint32_t prev_pkt_gps;
+
+    // IMU Sensor's Raw Output
     float raw_acc_x, raw_acc_y, raw_acc_z;  // TOTO : scale (deg, rad) identify
     float lin_acc_x, lin_acc_y, lin_acc_z;  // TOTO : scale (deg, rad) identify
     float raw_ang_x, raw_ang_y, raw_ang_z;  // TOTO : scale (deg, rad) identify
     float raw_mag_x, raw_mag_y, raw_mag_z;  // TOTO : scale (deg, rad) identify
+
+    // GPS Sensor's Decoded Output
+    int sats;
+    float hdop, lat, lng;
+    uint32_t age;
+    float alt_GPS;
 
     // Navigation Solution
     float r_cur, p_cur, y_cur; // Euler angles
